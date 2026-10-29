@@ -141,7 +141,7 @@ Prefer conducted tests using appropriate attenuation, loads, and a controlled RF
 
 - The measurements documented here are preliminary and apply to the stated port configurations and test conditions.
 - The complete antenna response, coupler power division/isolation, and combiner response at 815 MHz are not fully established by the values currently listed.
-- The −44.6 dBm reception result confirms detection under one reported setup, not a complete link-budget or receive-chain gain measurement.
+- The −19.4 dBm reception result confirms detection under one reported setup, not a complete link-budget or receive-chain gain measurement.
 - Adaptive null-steering, interference suppression, and array-level performance have not yet been quantitatively validated in the results documented here.
 
 The README should be updated as additional measured data, schematics, simulation files, and test procedures become available. Claims should remain traceable to raw measurements and reproducible test conditions.
