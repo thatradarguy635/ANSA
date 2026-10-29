@@ -1,197 +1,147 @@
 # ANSA — Adaptive Null-Steering Antenna System
 
-ANSA is a hardware-and-software research project exploring adaptive interference suppression using antenna-array signal combining and controllable RF phase/amplitude relationships. The current prototype work includes antenna hardware, passive RF networks, a DC-bias/phase-control board, and a controller/power-distribution board.
+> **Project stage:** Prototype fabrication and initial RF characterization  
+> **Target frequency used in the reported experiments:** 815 MHz  
+> **Current evidence:** Antenna and passive RF component measurements, plus an initial over-the-air reception test
 
-> **Project status:** Prototype hardware assembled; characterization, calibration, and end-to-end adaptive null-steering validation are ongoing. Performance claims should be based on documented VNA and over-the-air measurements rather than component appearance alone.
+ANSA (Adaptive Null-Steering Antenna System) is a hardware research project focused on developing an antenna and RF signal-processing platform for interference suppression. The current prototype work covers a microstrip patch antenna, a 90° hybrid branch-line coupler, an RF power combiner, a DC-bias/phase-control board, and a controller/power-distribution board.
 
-## Project overview
+This repository records the prototype hardware and the experimental results available at the current stage. The results below are component-characterization and signal-detection results; **adaptive null-steering performance has not yet been quantitatively demonstrated**.
 
-The intended system workflow is:
+## 1. Project objectives
 
-1. **Receive RF signals** with the antenna element or array.
-2. **Condition and combine RF paths** using passive RF networks.
-3. **Adjust controllable RF parameters** through a bias/control circuit.
-4. **Measure the received output** with suitable RF test equipment or an SDR.
-5. **Run an adaptive algorithm** to update control settings and reduce the measured interference while preserving the desired signal as far as the available hardware allows.
+- Design, simulate, fabricate, and characterize the antenna and RF network components.
+- Establish a repeatable measurement baseline around the intended 815 MHz operating point.
+- Integrate the RF components with the receiver and control hardware.
+- Progress toward array-level evaluation of phase/amplitude control and interference suppression.
+- Document measurements and limitations transparently so that later results can be reproduced and compared.
 
-The exact control law, receiver interface, operating band, and final system-level performance should be specified in the project configuration and test reports once they are verified.
+## 2. Hardware components
 
-## Hardware and prototype photographs
+### 2.1 Microstrip patch antenna
 
-### 1. Antenna element
+![Fabricated ANSA microstrip patch antenna](assets/antenna.jpg)
 
-![ANSA antenna element](assets/antenna.jpg)
+The fabricated microstrip patch antenna receives the incident RF signal and feeds it into the downstream receive chain. Its impedance match is an important first check before evaluating the complete system.
 
-The photographed board contains a rectangular conductive patch and a feed line terminating in an SMA connector. The patch is the radiating/receiving element; its dimensions, substrate properties, feed geometry, and ground-plane arrangement determine its resonant frequency, impedance match, bandwidth, and radiation pattern.
+**Reported measurement:** The antenna was measured with a vector network analyzer (VNA) over 727–927 MHz. At 815 MHz, the measured reflection coefficient was **S11 = −12.61 dB**, corresponding to approximately **5.5% reflected power**.
 
-**Role in ANSA**
-- Receives incident RF energy and converts it to an electrical RF signal.
-- Provides the antenna element response used by the downstream RF and signal-processing chain.
-- Must be characterized for resonant frequency, return loss (`S11`), impedance bandwidth, gain, and radiation pattern before array-level results can be interpreted.
+**Interpretation and remaining work:** This indicates a reasonable input match at the 815 MHz marker. The exact resonant frequency and impedance bandwidth have not yet been determined from the complete measured response. The full VNA trace should be retained and used to identify the resonance and −10 dB bandwidth, if applicable. Gain and radiation-pattern claims require separate measurements.
 
-**Recommended verification**
-- Measure `S11` using a calibrated VNA.
-- Record the substrate material, thickness, patch dimensions, connector launch geometry, and target frequency.
-- If this is intended to operate as one element in an array, document element spacing and mutual-coupling measurements.
+### 2.2 90° hybrid branch-line coupler
 
-### 2. RF power combiner
+![Fabricated ANSA 90-degree hybrid branch-line coupler](assets/90-degree-hybrid-coupler.jpg)
 
-![ANSA RF power combiner](assets/power-combiner.jpg)
+The four-port hybrid branch-line coupler is intended to establish a defined phase relationship between its output paths. For an ideal quadrature hybrid at its design frequency, the relevant output signals have approximately equal magnitudes and a 90° phase difference. Actual division, isolation, and phase balance must be established from measured S-parameters.
 
-The board has four SMA ports and a printed multi-branch transmission-line network. The visible layout appears to combine two pairs of RF paths and then combine those intermediate paths at a common port. The cross-branch resistors appear to provide isolation or resistive combining behaviour; the precise topology and design values should be confirmed against the schematic.
+**Reported measurements, with DC bias connected:**
 
-**Role in ANSA**
-- Combines RF signals from multiple paths into a single output.
-- Enables a single receiver/measurement chain to observe the combined result.
-- The relative phase and amplitude of the input signals determine whether they add constructively or partially cancel at the output.
+- Input impedance: approximately **49 Ω**.
+- Input reflection coefficient: approximately **S11 = −29 dB**.
+- Through transmission: **S21 ≈ −0.5 dB** over the reported 800–900 MHz range.
+- Phase difference between S21 and S31: **84.6°**, which is **5.4°** away from the ideal 90° quadrature relationship.
 
-**Important engineering note**
-A passive combiner does not itself perform adaptive null steering. It provides the RF combining network; adaptive behaviour requires controllable path weights (for example, phase and/or amplitude adjustment) and a feedback algorithm.
+The reported S11 corresponds to approximately **0.126% reflected power**, assuming the reported measurement and reference conditions are valid. These values are encouraging preliminary evidence for input matching and phase behaviour. They do not, by themselves, establish the complete power-division performance. The coupled-port transmission magnitude, output amplitude balance, isolated-port response, and full frequency-dependent S-parameters still need to be verified.
 
-**Recommended verification**
-- Identify and label the common/output port and each input port.
-- Measure insertion loss, input return loss, isolation between input ports, and amplitude/phase balance across the operating band.
-- Compare measured S-parameters with the simulated model. Do not label this as a Wilkinson combiner unless the schematic and impedance/resistor design confirm that topology.
+### 2.3 RF power combiner
 
-### 3. 90-degree hybrid branch-line coupler
+![Fabricated ANSA RF power combiner](assets/power-combiner.jpg)
 
-![ANSA four-port hybrid coupler](assets/90-degree-hybrid-coupler.jpg)
+The RF power combiner brings signals from the configured RF paths together at the designated output. Its measured behaviour depends on the port configuration and the relative phase and amplitude of the input signals. The precise topology and port roles should be documented alongside the circuit schematic.
 
-The board is a four-port printed transmission-line network with SMA connectors at the four corners, consistent in appearance with a branch-line hybrid coupler. A 90-degree hybrid ideally divides an input into two outputs with approximately equal amplitudes and a phase difference of 90 degrees, while isolating the fourth port under its design conditions.
+**Reported forward-transmission measurements:**
 
-**Role in ANSA**
-- Produces two RF output signals with a defined relative phase relationship.
-- Can support quadrature signal generation, RF comparison, or phase-sensitive network experiments.
-- Provides a useful building block for testing RF phase relationships in the ANSA prototype.
+- **S21 = −10.25 dB at 804.677 MHz.**
+- **S21 = −9.56 dB at 948.587 MHz.**
 
-**Preliminary measurement note**
-The project notes report `S11` of approximately `−29 dB` and a measured phase difference of `84.6°` between `S21` and `S31`. These are preliminary measured values and should be accompanied in the final report by the measurement frequency, calibration method, port numbering, magnitude balance, and uncertainty. A phase difference of `84.6°` is 5.4° away from the ideal 90° value.
+These measurements provide preliminary transmission data for the measured port configuration. Neither marker is at 815 MHz, so they do not establish the combiner's transmission at the target frequency. A direct measurement at 815 MHz is required. Input matching, isolation, and the response across the intended band also remain to be established.
 
-**Recommended verification**
-- Document the port numbering and define which port is the input, through, coupled, and isolated port.
-- Plot all relevant S-parameter magnitudes and the phase difference over frequency.
-- Verify output amplitude balance and isolation, not only input matching and phase difference.
+### 2.4 DC-bias / phase-control PCB
 
-### 4. DC-bias / phase-control PCB
+![Fabricated ANSA DC-bias and phase-control PCB](assets/dc-bias-phase-control-pcb.jpg)
 
-![ANSA DC-bias and phase-control PCB](assets/dc-bias-phase-control-pcb.jpg)
+The photographed board includes two SMA connectors and an MCP4725 DAC breakout. The MCP4725 can generate a programmable analogue voltage from digital commands over I²C. The intended role of the remaining circuit is to provide a control/bias interface for the RF path; the exact tunable element and circuit behaviour should be confirmed from the schematic and bill of materials.
 
-The photograph shows a custom PCB with two SMA RF ports, a small breakout board labelled `MCP4725`, and a discrete RF/control circuit. The MCP4725 is a digital-to-analogue converter (DAC) breakout; it can generate a programmable analogue voltage from digital commands over I²C. The remaining discrete circuit appears to interface the bias/control voltage with the RF path, but its exact function should be confirmed from the schematic and component values.
+No measured phase-shift range, insertion-loss-versus-control sweep, or bias-to-phase calibration data is included in the results below. To establish its role in adaptive operation, measure RF transmission phase and magnitude at the target frequency for each DAC setting, record the control-voltage range, and check repeatability. Verify DC isolation before connecting the board to RF test equipment.
 
-**Role in ANSA**
-- Provides a hardware path for experimenting with voltage-controlled RF behaviour.
-- May supply the bias voltage for a varactor or another tunable RF component if that is what the final schematic specifies.
-- Bridges digital control commands and analogue bias settings, enabling a software controller to sweep or update a hardware setting.
+### 2.5 Controller and power-distribution board
 
-**Important engineering note**
-The photo alone does not establish the achievable phase-shift range, tuning linearity, insertion loss, or whether the circuit is a complete phase shifter. These properties must be measured or simulated. Ensure the DAC output range, RF/DC isolation, bias filtering, component voltage limits, and grounding are appropriate before connecting it to the RF chain.
+![Fabricated ANSA controller and power-distribution board](assets/control-power-distribution-board.jpg)
 
-**Recommended verification**
-- Publish a schematic and component-value table.
-- Record the DAC supply/reference voltage, output range, I²C address, and control interface.
-- Measure RF transmission phase and insertion loss versus DAC voltage at the intended operating frequency.
-- Check that DC bias cannot reach the VNA, SDR, or other RF instrument input.
+The assembled board appears to include an ESP32 development board, a battery holder, a power switch, a DC–DC converter module, and wiring/connectors. It is intended to support control and power distribution for the prototype. A photograph alone does not establish that closed-loop adaptation is implemented or operational.
 
-### 5. Controller and power-distribution board
+The repository should be extended with the power tree, rail voltages, connector pinout, current consumption, firmware functions, and the interface used to command the bias-control board. Closed-loop operation should only be claimed after the controller receives a defined measurement or feedback metric and updates the RF control settings accordingly.
 
-![ANSA controller and power-distribution board](assets/control-power-distribution-board.jpg)
+## 3. Results and analysis
 
-This assembly appears to integrate an ESP32 development board, a battery holder, a power switch, a DC–DC converter module, connectors, and wiring for the prototype subsystems. The ESP32 provides a programmable controller and communication interface; the converter and distribution wiring provide the required supply rails to connected modules.
+The experimental evaluation was initiated through fabrication and characterization of the primary RF components and an initial end-to-end reception test.
 
-**Role in ANSA**
-- Hosts control firmware for setting or updating hardware parameters.
-- Can communicate with a host computer over USB/serial or another supported interface.
-- Distributes power to the prototype modules and provides a platform for integration testing.
+### 3.1 Antenna characterization
 
-**Recommended verification**
-- Publish a power-tree diagram listing each rail, voltage, current capability, and connected load.
-- Document the battery chemistry, cell count, protection, charging method, and fuse/current-limit arrangements.
-- Identify the exact DC–DC converter and confirm its output voltage and ripple under load.
-- Label each connector and record its pinout. Avoid relying on wire colour alone.
-- Keep RF grounds, digital grounds, and supply returns arranged according to the validated PCB/system design.
+The patch antenna was measured using a VNA over **727–927 MHz**. At **815 MHz**, the measured **S11 was −12.61 dB**. This corresponds to approximately **5.5% of incident power reflected** at the antenna input. The result indicates a reasonable match at the selected marker frequency. The exact resonant frequency and impedance bandwidth remain to be determined from the complete measured response.
 
-## System integration
+### 3.2 Hybrid-coupler characterization
 
-The hardware blocks can be represented at a high level as:
+With DC bias connected, the hybrid coupler's reported input impedance was approximately **49 Ω**, and its measured **S11 was approximately −29 dB**. The reported **S21 was approximately −0.5 dB across 800–900 MHz**. The measured phase difference between **S21 and S31 was 84.6°**, a deviation of **5.4°** from the ideal 90° quadrature relationship. The coupled-port transmission magnitude and isolation response still need to be verified before the power-division performance can be fully assessed.
 
-```text
-Antenna / RF inputs
-        |
-        v
-Passive RF network(s)
-(coupler / combiner)
-        |
-        v
-RF measurement or receiver chain
-        |
-        v
-Host-side measurement and adaptive algorithm
-        |
-        v
-Controller (e.g., ESP32) + DAC / bias-control PCB
-        |
-        +---- updates tunable RF hardware
-```
+### 3.3 Power-combiner characterization
 
-This is a conceptual architecture, not a verified wiring diagram. The final connection order depends on the actual RF topology and on which paths are controllable. A fixed passive coupler or combiner alone cannot create a dynamically steerable null.
+The combiner's measured forward transmission coefficient **S21** was **−10.25 dB at 804.677 MHz** and **−9.56 dB at 948.587 MHz**. These are preliminary results for the measured port configuration. Since neither marker is at 815 MHz, the combiner's response at the target frequency remains unknown from these data. The input matching and isolation characteristics also remain to be established.
 
-## Characterization and validation plan
+### 3.4 Initial over-the-air reception test
 
-| Stage | What to measure | Evidence to store |
+An initial reception experiment placed an RF transmitter approximately **6–7 m** from the receiving system. The received signal passed through the patch antenna, low-noise amplifier (LNA), branch coupler, and power combiner before reaching a spectrum analyzer. At **815 MHz**, the analyzer displayed a received signal level of **−44.6 dBm**.
+
+This confirms detection of the transmitted signal through the assembled receive chain under the test conditions. It does **not** independently determine the gain or loss of any one component or the overall receive-chain gain. Interpretation also depends on transmitter output power, LNA gain, antenna characteristics, propagation conditions, cable and connector losses, and measurement setup.
+
+### 3.5 Overall interpretation
+
+The current experiments establish an initial hardware-characterization baseline. The antenna's input match, the coupler's reported phase relationship, two combiner transmission markers, and reception of an over-the-air signal have been documented. The evidence does not yet quantify adaptive null depth, interference suppression, array-level behaviour, or preservation of a desired signal in the presence of interference. Those claims require controlled, repeatable tests of the integrated multi-element system.
+
+## 4. Performance metrics
+
+**Table 1. Summary of reported experimental performance metrics**
+
+| Component / test | Performance metric | Reported value |
+|---|---|---:|
+| Microstrip patch antenna | S11 at 815 MHz | −12.61 dB |
+| Microstrip patch antenna | Reflected power fraction at 815 MHz | Approximately 5.5% |
+| 90° hybrid branch-line coupler | Input impedance | Approximately 49 Ω |
+| 90° hybrid branch-line coupler | S11 | Approximately −29 dB |
+| 90° hybrid branch-line coupler | S21, with DC bias connected | Approximately −0.5 dB over 800–900 MHz |
+| 90° hybrid branch-line coupler | S21-to-S31 phase difference | 84.6° |
+| 90° hybrid branch-line coupler | Deviation from ideal 90° | 5.4° |
+| RF power combiner | S21 at 804.677 MHz | −10.25 dB |
+| RF power combiner | S21 at 948.587 MHz | −9.56 dB |
+| Complete receive chain | Received level at 815 MHz | −19.4 dBm |
+| Complete receive chain | Transmitter–receiver separation | Approximately 6–7 m |
+
+The antenna's S11 corresponds to approximately 5.5% reflected power at 815 MHz. The coupler's S11 of −29 dB corresponds to approximately 0.126% reflected power under the reported conditions. Its 84.6° phase difference is 5.4° away from the ideal quadrature target. The combiner's recorded values indicate attenuation between the measured ports at the two marker frequencies, but its performance at 815 MHz must be measured directly. The −44.6 dBm reception level is a system-level observation and is not, on its own, a measure of gain, efficiency, or insertion loss.
+
+## 5. Further validation required
+
+| Subsystem | Next validation step | Evidence to retain |
 |---|---|---|
-| Antenna | `S11`, resonant frequency, bandwidth, radiation pattern | VNA plots, dimensions, substrate details |
-| Hybrid coupler | `S11`–`S44`, insertion loss, isolation, output balance, phase difference | Touchstone `.s4p` file, port map, plots |
-| Power combiner | Return loss, insertion loss, isolation, amplitude/phase balance | Touchstone file, port map, plots |
-| Bias/phase-control PCB | Phase shift and insertion loss versus control voltage; bias limits | Schematic, sweep data, plots |
-| Controller/power board | Supply rails, ripple, current draw, communications, safe startup | Wiring diagram, firmware version, test log |
-| Integrated system | Output power/RSSI versus control settings; repeatability; desired-signal preservation | Test procedure, raw measurements, plots, software commit |
+| Patch antenna | Identify resonance and impedance bandwidth from the complete 727–927 MHz VNA trace; characterize radiation behaviour when equipment is available | Raw VNA trace, plot, substrate and geometry details, test setup |
+| Hybrid coupler | Verify coupled-port magnitude, isolation, output balance, and phase difference across frequency | Full S-parameter data, port map, calibration details, plots |
+| Power combiner | Measure S21 directly at 815 MHz and characterize input matching and isolation | Full frequency sweep, port configuration, schematic and plots |
+| Bias/phase-control PCB | Measure phase and insertion loss versus DAC setting at the target frequency | Schematic, voltage range, sweep data, firmware version |
+| Controller/power board | Verify supply rails, ripple, current draw, and control communication | Power tree, pinout, test log and firmware version |
+| Integrated array/system | Measure output versus control setting, null depth, interference suppression, and desired-signal preservation against a defined fixed-weight/no-adaptation baseline | Test geometry, raw data, repeat trials, baseline and analysis scripts |
 
-### Suggested project data structure
+For every measurement, record the test frequency, instrument settings, calibration/reference plane, port numbering, cable/fixture configuration, and date. Preserve raw VNA files (such as Touchstone `.sNp` files where available) alongside plots and a brief interpretation. Report adaptive null depth or suppression only after calculating it from repeatable measurements with a clearly stated baseline.
 
-```text
-ANSA/
-├── README.md
-├── assets/
-│   ├── antenna.jpg
-│   ├── power-combiner.jpg
-│   ├── 90-degree-hybrid-coupler.jpg
-│   ├── dc-bias-phase-control-pcb.jpg
-│   └── control-power-distribution-board.jpg
-├── hardware/
-│   ├── antenna/
-│   ├── coupler/
-│   ├── power-combiner/
-│   └── bias-control/
-├── firmware/
-├── software/
-├── simulations/
-├── measurements/
-│   ├── vna/
-│   └── system-tests/
-└── docs/
-```
 
-## Reproducibility
 
-For each hardware revision, keep the following with the repository:
+## 6. Safety and responsible testing
 
-- CAD/source files and exported Gerbers.
-- Schematics, PCB revision, bill of materials, and assembly notes.
-- CST/HFSS or other simulation projects and their key settings.
-- VNA calibration details, measurement frequency range, port mapping, and `.sNp` files.
-- Test scripts, firmware version, control settings, and raw measurement data.
-- A dated record of any hardware rework, connector changes, or component substitutions.
+Prefer conducted tests using appropriate attenuation, loads, and a controlled RF setup. Do not intentionally interfere with GNSS, cellular, Wi-Fi, public-safety, or other third-party communications. Conduct over-the-air testing only where lawful and authorized.
 
-## Safety and responsible testing
+## 7. Current limitations
 
-Use conducted tests with suitable attenuation, loads, shielding, or a controlled RF test setup where possible. Do not intentionally interfere with GNSS, cellular, Wi-Fi, public-safety, or other third-party communications. Perform over-the-air tests only in a lawful, authorized environment and within applicable spectrum rules.
+- The measurements documented here are preliminary and apply to the stated port configurations and test conditions.
+- The complete antenna response, coupler power division/isolation, and combiner response at 815 MHz are not fully established by the values currently listed.
+- The −44.6 dBm reception result confirms detection under one reported setup, not a complete link-budget or receive-chain gain measurement.
+- Adaptive null-steering, interference suppression, and array-level performance have not yet been quantitatively validated in the results documented here.
 
-## Current limitations
-
-- The photographs document the physical prototype but do not, by themselves, prove the electrical function or measured performance of every circuit.
-- The exact operating band and final system topology should be explicitly documented.
-- Claims of adaptive null depth, interference suppression, or communication improvement require repeatable system-level measurements against a defined baseline.
-
-## Contributing
-
-As the project develops, use issues for design questions and bugs, branches for experimental changes, and tagged releases for report-ready hardware/firmware revisions. Include measurement evidence when changing RF layouts or control algorithms.
+The README should be updated as additional measured data, schematics, simulation files, and test procedures become available. Claims should remain traceable to raw measurements and reproducible test conditions.
